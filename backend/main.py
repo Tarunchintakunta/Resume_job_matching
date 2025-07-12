@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import uvicorn
 import os
+from pymongo import MongoClient
 
 from app.core.config import settings
 from app.api.endpoints import resumes, jobs, matches
@@ -21,6 +23,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# MongoDB connection
+@app.on_event("startup")
+async def startup_db_client():
+    app.mongodb_client = MongoClient(settings.MONGODB_URL)
+    app.mongodb = app.mongodb_client[settings.DATABASE_NAME]
+    print("Connected to MongoDB!")
+
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    app.mongodb_client.close()
+    print("MongoDB connection closed")
+
 # Include routers
 app.include_router(resumes.router, prefix=f"{settings.API_V1_STR}/resumes", tags=["resumes"])
 app.include_router(jobs.router, prefix=f"{settings.API_V1_STR}/jobs", tags=["jobs"])
@@ -32,6 +46,18 @@ def read_root():
         "message": "Welcome to the Resume-Job Matching API",
         "documentation": "/docs"
     }
+
+@app.get("/health")
+def health_check():
+    try:
+        # Test MongoDB connection
+        app.mongodb_client.admin.command('ping')
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"status": "unhealthy", "database": str(e)}
+        )
 
 if __name__ == "__main__":
     # Create necessary directories
