@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
+import JobCreate from '../components/jobs/JobCreate';
+import JobList from '../components/jobs/JobList';
 
 const PageContainer = styled.div`
   padding-top: 80px;
@@ -21,6 +23,13 @@ const PageTitle = styled.h1`
 `;
 
 const JobsPage = () => {
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  const handleJobCreated = () => {
+    // Trigger a refresh of the job list
+    setRefreshTrigger(prev => prev + 1);
+  };
+  
   return (
     <>
       <Header />
@@ -28,6 +37,9 @@ const JobsPage = () => {
         <ContentContainer>
           <PageTitle>Job Postings</PageTitle>
           <p>This page will allow you to create, view, and manage job postings.</p>
+          
+          <JobCreate onJobCreated={handleJobCreated} />
+          <JobList refreshTrigger={refreshTrigger} />
         </ContentContainer>
       </PageContainer>
       <Footer />
