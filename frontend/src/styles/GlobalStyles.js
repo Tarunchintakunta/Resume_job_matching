@@ -1,5 +1,4 @@
 import { createGlobalStyle } from 'styled-components';
-import theme from './theme';
 
 const GlobalStyles = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono&display=swap');
@@ -11,36 +10,36 @@ const GlobalStyles = createGlobalStyle`
   }
 
   body {
-    font-family: ${theme.fonts.main};
-    background-color: ${theme.colors.background};
-    color: ${theme.colors.text};
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    color: #212529;
     line-height: 1.6;
     overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: ${theme.fonts.heading};
+    font-family: 'Poppins', sans-serif;
     font-weight: 600;
     line-height: 1.2;
-    margin-bottom: ${theme.spacing.md};
+    margin-bottom: 1rem;
   }
 
   p {
-    margin-bottom: ${theme.spacing.md};
+    margin-bottom: 1rem;
   }
 
   a {
-    color: ${theme.colors.primary};
+    color: #4361ee;
     text-decoration: none;
-    transition: color ${theme.transitions.fast};
+    transition: color 0.2s ease;
 
     &:hover {
-      color: ${theme.colors.secondary};
+      color: #3f37c9;
     }
   }
 
   button {
-    font-family: ${theme.fonts.main};
+    font-family: 'Poppins', sans-serif;
     cursor: pointer;
   }
 
@@ -54,14 +53,14 @@ const GlobalStyles = createGlobalStyle`
   }
 
   section {
-    padding: ${theme.spacing.xl} 0;
+    padding: 2rem 0;
   }
 
   .container {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 ${theme.spacing.md};
+    padding: 0 1rem;
   }
 `;
 

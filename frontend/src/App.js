@@ -11,7 +11,7 @@ import ResumesPage from './pages/ResumesPage';
 import JobsPage from './pages/JobsPage';
 import MatchesPage from './pages/MatchesPage';
 
-function App() {
+const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles />
@@ -26,6 +26,6 @@ function App() {
       </Router>
     </ThemeProvider>
   );
-}
+};
 
 export default App;
