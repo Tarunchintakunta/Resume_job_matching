@@ -1,7 +1,7 @@
-from pydantic import BaseSettings
-from typing import Optional, Dict, Any
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
+from typing import List
 import os
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -19,6 +19,6 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # CORS settings
-    BACKEND_CORS_ORIGINS: list = ["http://localhost:3000"]
+    BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000"]
 
 settings = Settings()
