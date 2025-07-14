@@ -32,3 +32,9 @@ export const getMatchesForResume = async (resumeId) => {
     throw error;
   }
 };
+
+export default {
+  calculateMatches,
+  getMatchesForJob,
+  getMatchesForResume
+};
