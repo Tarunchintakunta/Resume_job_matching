@@ -114,7 +114,10 @@ const ResumeUpload = ({ onUploadSuccess }) => {
     setLoading(true);
     
     try {
+      console.log('Uploading file:', file.name);
       const response = await uploadResume(formData);
+      console.log('Upload response:', response);
+      
       setAlert({
         type: 'success',
         message: 'Resume uploaded successfully!'
@@ -124,6 +127,7 @@ const ResumeUpload = ({ onUploadSuccess }) => {
         onUploadSuccess(response);
       }
     } catch (error) {
+      console.error('Error in upload component:', error);
       setAlert({
         type: 'error',
         message: error.response?.data?.detail || 'Error uploading resume. Please try again.'
