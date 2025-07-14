@@ -29,6 +29,17 @@ async def create_job(
         
         # Save to database
         job_dict = job.dict()
+        # Fill in defaults for missing fields
+        job_dict.setdefault("requirements", [])
+        job_dict.setdefault("qualifications", [])
+        job_dict.setdefault("skills_required", [])
+        job_dict.setdefault("experience_required", 0)
+        job_dict.setdefault("location", "")
+        job_dict.setdefault("job_type", "")
+        job_dict.setdefault("salary_range", "")
+        job_dict.setdefault("vector", [])
+        job_dict.setdefault("created_at", datetime.now())
+        job_dict.setdefault("updated_at", datetime.now())
         db.jobs.insert_one(job_dict)
         
         return job
@@ -87,9 +98,20 @@ async def update_job(
     job_update.updated_at = datetime.now()
     
     # Update in database
+    job_update_dict = job_update.dict()
+    job_update_dict.setdefault("requirements", [])
+    job_update_dict.setdefault("qualifications", [])
+    job_update_dict.setdefault("skills_required", [])
+    job_update_dict.setdefault("experience_required", 0)
+    job_update_dict.setdefault("location", "")
+    job_update_dict.setdefault("job_type", "")
+    job_update_dict.setdefault("salary_range", "")
+    job_update_dict.setdefault("vector", [])
+    job_update_dict.setdefault("created_at", existing_job.get("created_at", datetime.now()))
+    job_update_dict.setdefault("updated_at", datetime.now())
     db.jobs.update_one(
         {"id": job_id},
-        {"$set": job_update.dict()}
+        {"$set": job_update_dict}
     )
     
     return job_update
