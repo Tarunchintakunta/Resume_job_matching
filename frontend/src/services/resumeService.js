@@ -1,45 +1,29 @@
 import api from './api';
+import { deleteResume, getResumeById, getResumes, uploadResume } from './api';
 
-export const getResumes = async () => {
+// Re-export the functions for backward compatibility
+export { deleteResume, getResumeById, getResumes, uploadResume };
+
+// For any additional resume-specific functions
+export const searchResumes = async (query) => {
   try {
-    const response = await api.get('/resumes');
-    return response.data;
+    const allResumes = await getResumes();
+    // Simple search implementation
+    return allResumes.filter(resume => 
+      resume.name?.toLowerCase().includes(query.toLowerCase()) ||
+      resume.skills?.some(skill => skill.toLowerCase().includes(query.toLowerCase())) ||
+      resume.raw_text?.toLowerCase().includes(query.toLowerCase())
+    );
   } catch (error) {
-    console.error('Error fetching resumes:', error);
+    console.error('Error searching resumes:', error);
     throw error;
   }
 };
 
-export const getResumeById = async (id) => {
-  try {
-    const response = await api.get(`/resumes/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching resume with id ${id}:`, error);
-    throw error;
-  }
-};
-
-export const uploadResume = async (formData) => {
-  try {
-    const response = await api.post('/resumes', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error uploading resume:', error);
-    throw error;
-  }
-};
-
-export const deleteResume = async (id) => {
-  try {
-    const response = await api.delete(`/resumes/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error deleting resume with id ${id}:`, error);
-    throw error;
-  }
+export default {
+  deleteResume,
+  getResumeById,
+  getResumes,
+  uploadResume,
+  searchResumes
 };
