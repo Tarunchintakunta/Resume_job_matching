@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import GlobalStyles from './styles/GlobalStyles';
 import theme from './styles/theme';
+import { Toaster } from 'react-hot-toast';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -13,18 +14,21 @@ import MatchesPage from './pages/MatchesPage';
 
 const App = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <GlobalStyles />
-      <Router>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/resumes" element={<ResumesPage />} />
-          <Route path="/jobs" element={<JobsPage />} />
-          <Route path="/matches" element={<MatchesPage />} />
-        </Routes>
-      </Router>
-    </ThemeProvider>
+    <>
+      <Toaster position="top-center" />
+      <ThemeProvider theme={theme}>
+        <GlobalStyles />
+        <Router>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/resumes" element={<ResumesPage />} />
+            <Route path="/jobs" element={<JobsPage />} />
+            <Route path="/matches" element={<MatchesPage />} />
+          </Routes>
+        </Router>
+      </ThemeProvider>
+    </>
   );
 };
 

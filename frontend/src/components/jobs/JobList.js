@@ -3,6 +3,9 @@ import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getJobs, deleteJob } from '../../services/jobService';
 import Button from '../common/Button';
+import JobDialog from './JobDialog';
+import ConfirmDeleteDialog from '../common/ConfirmDeleteDialog';
+import { toast } from 'react-hot-toast';
 
 const ListContainer = styled(motion.div)`
   background-color: ${props => props.theme.colors.white};
@@ -160,6 +163,11 @@ const JobList = ({ onJobSelect, refreshTrigger = 0 }) => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const [dialogOpen, setDialogOpen] = useState(false);
+  // Remove delete dialog state
+  // const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // const [jobToDelete, setJobToDelete] = useState(null);
+  const [editingJob, setEditingJob] = useState({ title: '', company: '' });
 
   const fetchJobs = async () => {
     setLoading(true);
@@ -179,23 +187,53 @@ const JobList = ({ onJobSelect, refreshTrigger = 0 }) => {
   }, [refreshTrigger]);
 
   const handleDeleteJob = async (id, e) => {
-    e.stopPropagation(); // Prevent triggering the click on the parent div
-    
-    if (window.confirm('Are you sure you want to delete this job posting?')) {
-      try {
-        await deleteJob(id);
-        fetchJobs(); // Refresh the list
-      } catch (err) {
-        setError('Failed to delete job posting. Please try again.');
-      }
+    e.stopPropagation();
+    try {
+      await deleteJob(id);
+      toast.success('Job deleted!');
+      fetchJobs();
+    } catch (e) {
+      toast.error('Failed to delete job');
     }
   };
 
   const handleJobClick = (job) => {
-    if (onJobSelect) {
-      onJobSelect(job);
+    setEditingJob(job);
+    setDialogOpen(true);
+  };
+
+  const handleEditJob = (job, e) => {
+    e.stopPropagation();
+    setEditingJob(job);
+    setDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    try {
+      // Call your API to add or update job
+      // await api.saveJob(editingJob);
+      toast.success(editingJob.id ? 'Job updated!' : 'Job added!');
+      setDialogOpen(false);
+      // Optionally refresh job list
+    } catch (e) {
+      toast.error('Failed to save job');
     }
   };
+
+  // Update handleDelete to refresh jobs and reset state
+  // const handleDelete = async () => {
+  //   try {
+  //     await deleteJob(jobToDelete); // Actually call the API
+  //     toast.success('Job deleted!');
+  //     setDeleteDialogOpen(false);
+  //     setJobToDelete(null);
+  //     fetchJobs(); // Refresh the job list
+  //   } catch (e) {
+  //     toast.error('Failed to delete job');
+  //     setDeleteDialogOpen(false);
+  //     setJobToDelete(null);
+  //   }
+  // };
 
   // Pagination logic
   const totalPages = Math.ceil(jobs.length / itemsPerPage);
@@ -218,111 +256,127 @@ const JobList = ({ onJobSelect, refreshTrigger = 0 }) => {
   };
 
   return (
-    <ListContainer
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Title>
-        Job Postings 
-        <JobCount>{jobs.length} total</JobCount>
-      </Title>
-      
-      {error && <Error>{error}</Error>}
-      
-      {loading ? (
-        <Loader>
-          <i className="fas fa-spinner"></i>
-          <p>Loading job postings...</p>
-        </Loader>
-      ) : paginatedJobs.length === 0 ? (
-        <EmptyState>
-          <i className="fas fa-briefcase" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
-          <p>No job postings found. Create a job posting to get started!</p>
-        </EmptyState>
-      ) : (
-        <>
-          <AnimatePresence>
-            {paginatedJobs.map((job) => (
-              <JobItem
-                key={job.id}
-                onClick={() => handleJobClick(job)}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <JobInfo>
-                  <JobTitle>{job.title}</JobTitle>
-                  <JobDetail>
-                    <div>
-                      <i className="fas fa-building"></i> {job.company}
-                    </div>
-                    <div>
-                      <i className="fas fa-map-marker-alt"></i> {job.location || 'No location specified'}
-                    </div>
-                    <div>
-                      <i className="fas fa-clock"></i> {job.job_type || 'Full-time'}
-                    </div>
-                    {job.experience_required && (
-                      <div>
-                        <i className="fas fa-briefcase"></i> {job.experience_required}+ years
-                      </div>
-                    )}
-                  </JobDetail>
-                  {job.skills_required && job.skills_required.length > 0 && (
-                    <SkillTags>
-                      {job.skills_required.slice(0, 5).map((skill, index) => (
-                        <SkillTag key={index}>{skill}</SkillTag>
-                      ))}
-                      {job.skills_required.length > 5 && (
-                        <SkillTag>+{job.skills_required.length - 5} more</SkillTag>
-                      )}
-                    </SkillTags>
-                  )}
-                </JobInfo>
-                <ActionButtons>
-                  <ActionButton 
-                    color={props => props.theme.colors.error}
-                    onClick={(e) => handleDeleteJob(job.id, e)}
-                  >
-                    <i className="fas fa-trash"></i>
-                  </ActionButton>
-                </ActionButtons>
-              </JobItem>
-            ))}
-          </AnimatePresence>
-          
-          {totalPages > 1 && (
-            <Pagination>
-              <PaginationButton 
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                <i className="fas fa-chevron-left"></i>
-              </PaginationButton>
-              
-              {getPageNumbers().map(page => (
-                <PaginationButton 
-                  key={page}
-                  active={page === currentPage}
-                  onClick={() => handlePageChange(page)}
+    <>
+      <ListContainer
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Title>
+          Job Postings 
+          <JobCount>{jobs.length} total</JobCount>
+        </Title>
+        
+        {error && <Error>{error}</Error>}
+        
+        {loading ? (
+          <Loader>
+            <i className="fas fa-spinner"></i>
+            <p>Loading job postings...</p>
+          </Loader>
+        ) : paginatedJobs.length === 0 ? (
+          <EmptyState>
+            <i className="fas fa-briefcase" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
+            <p>No job postings found. Create a job posting to get started!</p>
+          </EmptyState>
+        ) : (
+          <>
+            <AnimatePresence>
+              {paginatedJobs.map((job) => (
+                <JobItem
+                  key={job.id}
+                  onClick={() => handleJobClick(job)}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  {page}
-                </PaginationButton>
+                  <JobInfo>
+                    <JobTitle>{job.title}</JobTitle>
+                    <JobDetail>
+                      <div>
+                        <i className="fas fa-building"></i> {job.company}
+                      </div>
+                      <div>
+                        <i className="fas fa-map-marker-alt"></i> {job.location || 'No location specified'}
+                      </div>
+                      <div>
+                        <i className="fas fa-clock"></i> {job.job_type || 'Full-time'}
+                      </div>
+                      {job.experience_required && (
+                        <div>
+                          <i className="fas fa-briefcase"></i> {job.experience_required}+ years
+                        </div>
+                      )}
+                    </JobDetail>
+                    {job.skills_required && job.skills_required.length > 0 && (
+                      <SkillTags>
+                        {job.skills_required.slice(0, 5).map((skill, index) => (
+                          <SkillTag key={index}>{skill}</SkillTag>
+                        ))}
+                        {job.skills_required.length > 5 && (
+                          <SkillTag>+{job.skills_required.length - 5} more</SkillTag>
+                        )}
+                      </SkillTags>
+                    )}
+                  </JobInfo>
+                  <ActionButtons>
+                    <ActionButton 
+                      color={props => props.theme.colors.primary}
+                      onClick={(e) => handleEditJob(job, e)}
+                    >
+                      <i className="fas fa-edit"></i>
+                    </ActionButton>
+                    <ActionButton 
+                      color={props => props.theme.colors.error}
+                      onClick={(e) => handleDeleteJob(job.id, e)}
+                    >
+                      <i className="fas fa-trash"></i>
+                    </ActionButton>
+                  </ActionButtons>
+                </JobItem>
               ))}
-              
-              <PaginationButton 
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                <i className="fas fa-chevron-right"></i>
-              </PaginationButton>
-            </Pagination>
-          )}
-        </>
-      )}
-    </ListContainer>
+            </AnimatePresence>
+            
+            {totalPages > 1 && (
+              <Pagination>
+                <PaginationButton 
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <i className="fas fa-chevron-left"></i>
+                </PaginationButton>
+                
+                {getPageNumbers().map(page => (
+                  <PaginationButton 
+                    key={page}
+                    active={page === currentPage}
+                    onClick={() => handlePageChange(page)}
+                  >
+                    {page}
+                  </PaginationButton>
+                ))}
+                
+                <PaginationButton 
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  <i className="fas fa-chevron-right"></i>
+                </PaginationButton>
+              </Pagination>
+            )}
+          </>
+        )}
+      </ListContainer>
+      <JobDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        job={editingJob}
+        onChange={setEditingJob}
+        onSave={handleSave}
+      />
+      {/* Remove ConfirmDeleteDialog from render */}
+    </>
   );
 };
 
