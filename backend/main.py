@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 import uvicorn
 import os
 from pymongo import MongoClient
@@ -14,10 +13,10 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# Set up CORS
+# Set up CORS - Allow ALL origins during development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origins=settings.BACKEND_CORS_ORIGINS,  # Use config value for allowed origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,6 +27,21 @@ app.add_middleware(
 async def startup_db_client():
     app.mongodb_client = MongoClient(settings.MONGODB_URL)
     app.mongodb = app.mongodb_client[settings.DATABASE_NAME]
+    
+    # Ensure collections exist
+    collection_names = app.mongodb.list_collection_names()
+    if "resumes" not in collection_names:
+        app.mongodb.create_collection("resumes")
+    if "jobs" not in collection_names:
+        app.mongodb.create_collection("jobs")
+    if "matches" not in collection_names:
+        app.mongodb.create_collection("matches")
+    
+    # Create indexes
+    app.mongodb.resumes.create_index("id", unique=True)
+    app.mongodb.jobs.create_index("id", unique=True)
+    app.mongodb.matches.create_index([("job_id", 1), ("resume_id", 1)], unique=True)
+    
     print("Connected to MongoDB!")
 
 @app.on_event("shutdown")
@@ -46,18 +60,6 @@ def read_root():
         "message": "Welcome to the Resume-Job Matching API",
         "documentation": "/docs"
     }
-
-@app.get("/health")
-def health_check():
-    try:
-        # Test MongoDB connection
-        app.mongodb_client.admin.command('ping')
-        return {"status": "healthy", "database": "connected"}
-    except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"status": "unhealthy", "database": str(e)}
-        )
 
 if __name__ == "__main__":
     # Create necessary directories
