@@ -231,25 +231,38 @@ const JobCreate = ({ onJobCreated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!formData.title || !formData.company || !formData.description) {
+
+    // Add any pending tag input values to the arrays
+    let updatedFormData = { ...formData };
+    if (currentSkill.trim()) {
+      updatedFormData.skills_required = [...formData.skills_required, currentSkill.trim()];
+      setCurrentSkill('');
+    }
+    if (currentRequirement.trim()) {
+      updatedFormData.requirements = [...formData.requirements, currentRequirement.trim()];
+      setCurrentRequirement('');
+    }
+    if (currentQualification.trim()) {
+      updatedFormData.qualifications = [...formData.qualifications, currentQualification.trim()];
+      setCurrentQualification('');
+    }
+
+    if (!updatedFormData.title || !updatedFormData.company || !updatedFormData.description) {
       setAlert({
         type: 'error',
         message: 'Please fill in all required fields (title, company, description).'
       });
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
-      const response = await createJob(formData);
+      const response = await createJob(updatedFormData);
       setAlert({
         type: 'success',
         message: 'Job posting created successfully!'
       });
-      
-      // Reset form
       setFormData({
         title: '',
         company: '',
@@ -262,7 +275,6 @@ const JobCreate = ({ onJobCreated }) => {
         job_type: 'Full-time',
         salary_range: ''
       });
-      
       if (onJobCreated) {
         onJobCreated(response);
       }
