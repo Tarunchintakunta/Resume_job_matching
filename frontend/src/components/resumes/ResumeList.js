@@ -238,6 +238,7 @@ const ResumeList = ({ onResumeSelect }) => {
                 <ResumeInfo>
                   <ResumeName>{resume.name}</ResumeName>
                   <ResumeDetail>
+                    
                     <div>
                       <i className="fas fa-envelope"></i> {resume.email || 'No email'}
                     </div>
