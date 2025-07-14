@@ -49,3 +49,11 @@ export const deleteJob = async (id) => {
     throw error;
   }
 };
+
+export default {
+  getJobs,
+  getJobById,
+  createJob,
+  updateJob,
+  deleteJob
+};
