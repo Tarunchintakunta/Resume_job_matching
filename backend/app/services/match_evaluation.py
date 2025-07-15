@@ -3,11 +3,17 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 
 def precision_at_k(y_true, y_pred, k):
     top_k = np.argsort(y_pred)[::-1][:k]
-    return precision_score(y_true[top_k], np.ones(k))
+    # Ensure we don't exceed the length of y_true
+    actual_k = min(k, len(y_true))
+    top_k = top_k[:actual_k]
+    return precision_score(y_true[top_k], np.ones(actual_k))
 
 def recall_at_k(y_true, y_pred, k):
     top_k = np.argsort(y_pred)[::-1][:k]
-    return recall_score(y_true[top_k], np.ones(k))
+    # Ensure we don't exceed the length of y_true
+    actual_k = min(k, len(y_true))
+    top_k = top_k[:actual_k]
+    return recall_score(y_true[top_k], np.ones(actual_k))
 
 def f1_at_k(y_true, y_pred, k):
     p = precision_at_k(y_true, y_pred, k)
