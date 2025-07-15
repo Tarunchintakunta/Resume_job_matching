@@ -4,6 +4,12 @@ import re
 from typing import Dict, Any, List, Optional
 from PyPDF2 import PdfReader  # Updated from PdfFileReader to PdfReader
 from app.services.text_processor import TextProcessor
+import pdfplumber
+import docx
+import re
+import spacy
+
+nlp = spacy.load('en_core_web_sm')
 
 class ResumeParser:
     def __init__(self, skills_database: List[str]):

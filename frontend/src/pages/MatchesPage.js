@@ -184,6 +184,11 @@ const MatchesPage = () => {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(false);
   
+  // Add filter state
+  const [minScore, setMinScore] = useState(0);
+  const [requiredSkill, setRequiredSkill] = useState('');
+  const [sortBy, setSortBy] = useState('score');
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -224,6 +229,12 @@ const MatchesPage = () => {
   const getResumeById = (resumeId) => {
     return resumes.find(resume => resume.id === resumeId) || {};
   };
+
+  // Filter and sort matches
+  const filteredMatches = matches
+    .filter(m => m.score * 100 >= minScore)
+    .filter(m => !requiredSkill || m.details.matching_skills.includes(requiredSkill))
+    .sort((a, b) => sortBy === 'score' ? b.score - a.score : 0);
   
   return (
     <>
@@ -274,7 +285,13 @@ const MatchesPage = () => {
             <MatchList>
               <SectionTitle>Match Results</SectionTitle>
               
-              {matches.map((match, index) => {
+              <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
+                <label>Min Score: <input type="number" value={minScore} onChange={e => setMinScore(Number(e.target.value))} min={0} max={100} /></label>
+                <label>Required Skill: <input type="text" value={requiredSkill} onChange={e => setRequiredSkill(e.target.value)} /></label>
+                <label>Sort By: <select value={sortBy} onChange={e => setSortBy(e.target.value)}><option value="score">Score</option></select></label>
+              </div>
+
+              {filteredMatches.map((match, index) => {
                 const resume = getResumeById(match.resume_id);
                 const scorePercentage = Math.round(match.score * 100);
                 

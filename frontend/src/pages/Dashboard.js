@@ -5,6 +5,7 @@ import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
 import { getResumes } from '../services/resumeService';
 import { getJobs } from '../services/jobService';
+import EvaluationMetrics from '../components/admin/EvaluationMetrics';
 
 const DashboardContainer = styled.div`
   padding-top: 80px;
@@ -266,6 +267,7 @@ const Dashboard = () => {
         </ContentContainer>
       </DashboardContainer>
       <Footer />
+      <EvaluationMetrics />
     </>
   );
 };
