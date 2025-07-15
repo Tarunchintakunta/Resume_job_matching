@@ -64,6 +64,10 @@ def read_root():
         "documentation": "/docs"
     }
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 if __name__ == "__main__":
     # Create necessary directories
     os.makedirs("data", exist_ok=True)
