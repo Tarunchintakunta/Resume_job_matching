@@ -1,0 +1,20 @@
+{
+  "resumes": {
+    "count": 100,
+    "categories": 10,
+    "avg_skills": 6.45,
+    "completeness": 11.11111111111111
+  },
+  "jobs": {
+    "count": 50,
+    "companies": 18,
+    "titles": 12,
+    "completeness": 4.166666666666666
+  },
+  "skills": {
+    "count": 129,
+    "categories": 10,
+    "avg_popularity": 46.286821705426355,
+    "avg_demand": 50.35658914728682
+  }
+}
