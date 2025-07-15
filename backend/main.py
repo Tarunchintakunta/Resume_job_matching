@@ -5,7 +5,7 @@ import os
 from pymongo import MongoClient
 
 from app.core.config import settings
-from app.api.endpoints import resumes, jobs, matches
+from app.api.endpoints import resumes, jobs, matches, match, advanced_matches, nlp_analysis
 
 # Create FastAPI app
 app = FastAPI(
@@ -53,6 +53,9 @@ async def shutdown_db_client():
 app.include_router(resumes.router, prefix=f"{settings.API_V1_STR}/resumes", tags=["resumes"])
 app.include_router(jobs.router, prefix=f"{settings.API_V1_STR}/jobs", tags=["jobs"])
 app.include_router(matches.router, prefix=f"{settings.API_V1_STR}/matches", tags=["matches"])
+app.include_router(match.router, prefix=f"{settings.API_V1_STR}", tags=["evaluation"])
+app.include_router(advanced_matches.router, prefix=f"{settings.API_V1_STR}/advanced", tags=["advanced-matching"])
+app.include_router(nlp_analysis.router, prefix=f"{settings.API_V1_STR}/nlp", tags=["nlp-analysis"])
 
 @app.get("/")
 def read_root():
