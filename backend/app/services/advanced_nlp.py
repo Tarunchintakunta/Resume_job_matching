@@ -13,6 +13,8 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 import pickle
 import joblib
+import warnings
+warnings.filterwarnings('ignore')
 
 # Download required NLTK data
 try:
@@ -93,7 +95,23 @@ class AdvancedNLPProcessor:
             # For now, create a simple word embedding simulation
             self.word2vec_model = {
                 'vector_size': 100,
-                'vocab': set(['python', 'javascript', 'react', 'node', 'mongodb', 'aws', 'docker'])
+                'vocab': set(['python', 'javascript', 'react', 'node', 'mongodb', 'aws', 'docker', 
+                             'java', 'c++', 'c#', 'go', 'rust', 'swift', 'kotlin', 'typescript', 
+                             'php', 'ruby', 'scala', 'r', 'matlab', 'sql', 'mysql', 'postgresql', 
+                             'redis', 'oracle', 'sqlite', 'cassandra', 'dynamodb', 'elasticsearch', 
+                             'neo4j', 'influxdb', 'couchdb', 'mariadb', 'azure', 'gcp', 'kubernetes', 
+                             'terraform', 'jenkins', 'gitlab', 'github', 'ansible', 'chef', 'puppet', 
+                             'vagrant', 'vmware', 'openstack', 'machine', 'learning', 'deep', 'neural', 
+                             'networks', 'tensorflow', 'pytorch', 'scikit', 'nlp', 'computer', 'vision', 
+                             'data', 'mining', 'predictive', 'analytics', 'statistical', 'reinforcement', 
+                             'ios', 'android', 'react', 'native', 'flutter', 'xamarin', 'mobile', 'app', 
+                             'cybersecurity', 'network', 'security', 'information', 'penetration', 'testing', 
+                             'ethical', 'hacking', 'cryptography', 'security', 'auditing', 'incident', 'response', 
+                             'siem', 'agile', 'scrum', 'kanban', 'project', 'management', 'jira', 'confluence', 
+                             'trello', 'asana', 'microsoft', 'waterfall', 'lean', 'six', 'sigma', 'pmi', 
+                             'leadership', 'communication', 'teamwork', 'problem', 'solving', 'critical', 
+                             'thinking', 'time', 'management', 'customer', 'service', 'sales', 'marketing', 
+                             'public', 'speaking', 'negotiation'])
             }
             print("Word2Vec model initialized (simulated)")
         except Exception as e:
