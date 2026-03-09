@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
 import { getJobs } from '../services/jobService';
 import { getResumes } from '../services/resumeService';
-import { calculateMatches, getMatchesForJob } from '../services/matchService';
-import Button from '../components/common/Button';
+import { calculateMatches } from '../services/matchService';
+import MatchCalculation from '../components/matches/MatchCalculation';
+import MatchResults from '../components/matches/MatchResults';
+import MatchVisualization from '../components/matches/MatchVisualization';
 
 const PageContainer = styled.div`
   padding-top: 80px;
@@ -25,156 +26,89 @@ const PageTitle = styled.h1`
   color: ${props => props.theme.colors.text};
 `;
 
-const Card = styled(motion.div)`
-  background-color: ${props => props.theme.colors.white};
-  border-radius: ${props => props.theme.borderRadius.medium};
-  padding: ${props => props.theme.spacing.xl};
-  box-shadow: ${props => props.theme.shadows.medium};
-  margin-bottom: ${props => props.theme.spacing.xl};
-`;
-
 const SectionTitle = styled.h2`
   font-size: ${props => props.theme.fontSizes.large};
+  margin-top: ${props => props.theme.spacing.xl};
   margin-bottom: ${props => props.theme.spacing.md};
   color: ${props => props.theme.colors.text};
 `;
 
-const FormGroup = styled.div`
-  margin-bottom: ${props => props.theme.spacing.md};
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: ${props => props.theme.spacing.sm};
-  font-weight: 500;
-  color: ${props => props.theme.colors.text};
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: ${props => props.theme.spacing.sm};
-  border: 1px solid ${props => props.theme.colors.lightGray};
-  border-radius: ${props => props.theme.borderRadius.small};
-  font-size: ${props => props.theme.fontSizes.regular};
-  transition: border-color ${props => props.theme.transitions.fast};
-  
-  &:focus {
-    border-color: ${props => props.theme.colors.primary};
-    outline: none;
-  }
-`;
-
-const ButtonContainer = styled.div`
-  margin-top: ${props => props.theme.spacing.lg};
-`;
-
-const MatchList = styled.div`
-  margin-top: ${props => props.theme.spacing.lg};
-`;
-
-const MatchItem = styled(motion.div)`
-  padding: ${props => props.theme.spacing.lg};
-  border-radius: ${props => props.theme.borderRadius.small};
-  margin-bottom: ${props => props.theme.spacing.md};
-  background-color: ${props => props.theme.colors.background};
+const FilterBar = styled.div`
   display: flex;
+  gap: 16px;
   align-items: center;
-  
-  @media (max-width: ${props => props.theme.breakpoints.tablet}) {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-`;
-
-const MatchScore = styled.div`
-  width: 80px;
-  height: 80px;
-  border-radius: ${props => props.theme.borderRadius.round};
-  background: ${props => props.theme.colors.gradient};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${props => props.theme.colors.white};
-  font-size: ${props => props.theme.fontSizes.xlarge};
-  font-weight: 700;
-  margin-right: ${props => props.theme.spacing.lg};
-  
-  @media (max-width: ${props => props.theme.breakpoints.tablet}) {
-    margin-bottom: ${props => props.theme.spacing.md};
-  }
-`;
-
-const MatchInfo = styled.div`
-  flex: 1;
-`;
-
-const MatchName = styled.h3`
-  font-size: ${props => props.theme.fontSizes.medium};
-  margin-bottom: ${props => props.theme.spacing.xs};
-  color: ${props => props.theme.colors.text};
-`;
-
-const MatchDetail = styled.div`
-  font-size: ${props => props.theme.fontSizes.small};
-  color: ${props => props.theme.colors.lightText};
-  margin-bottom: ${props => props.theme.spacing.sm};
-  
-  i {
-    margin-right: ${props => props.theme.spacing.xs};
-  }
-`;
-
-const SkillsMatch = styled.div`
-  margin-top: ${props => props.theme.spacing.sm};
-`;
-
-const SkillsTitle = styled.div`
-  font-weight: 500;
-  margin-bottom: ${props => props.theme.spacing.xs};
-`;
-
-const SkillTags = styled.div`
-  display: flex;
   flex-wrap: wrap;
-  gap: ${props => props.theme.spacing.xs};
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 `;
 
-const SkillTag = styled.span`
-  background-color: ${props => props.matched 
-    ? 'rgba(75, 181, 67, 0.1)' 
-    : 'rgba(255, 51, 51, 0.1)'};
-  color: ${props => props.matched 
-    ? props.theme.colors.success 
-    : props.theme.colors.error};
-  font-size: ${props => props.theme.fontSizes.small};
-  padding: 2px 8px;
-  border-radius: ${props => props.theme.borderRadius.small};
-  
-  i {
-    margin-right: 4px;
-  }
+const FilterLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #495057;
+  font-weight: 500;
+`;
+
+const FilterInput = styled.input`
+  padding: 6px 10px;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  width: 80px;
+`;
+
+const FilterSelect = styled.select`
+  padding: 6px 10px;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 0.9rem;
 `;
 
 const Loader = styled.div`
   text-align: center;
-  padding: ${props => props.theme.spacing.xl} 0;
-  color: ${props => props.theme.colors.lightText};
-  
-  i {
-    font-size: ${props => props.theme.fontSizes.xlarge};
-    animation: spin 1s linear infinite;
-  }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
+  padding: 48px 0;
+  color: #6c757d;
+  font-size: 1.1rem;
 `;
 
 const EmptyState = styled.div`
   text-align: center;
-  padding: ${props => props.theme.spacing.xl} 0;
-  color: ${props => props.theme.colors.lightText};
+  padding: 48px 0;
+  color: #6c757d;
+`;
+
+const SummaryBar = styled.div`
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+`;
+
+const SummaryItem = styled.div`
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  text-align: center;
+  flex: 1;
+  min-width: 120px;
+`;
+
+const SummaryValue = styled.div`
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: ${props => props.color || '#4361ee'};
+`;
+
+const SummaryLabel = styled.div`
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 4px;
 `;
 
 const MatchesPage = () => {
@@ -183,24 +117,15 @@ const MatchesPage = () => {
   const [selectedJobId, setSelectedJobId] = useState('');
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-  // Add filter state
   const [minScore, setMinScore] = useState(0);
-  const [requiredSkill, setRequiredSkill] = useState('');
   const [sortBy, setSortBy] = useState('score');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch jobs
-        const jobsData = await getJobs();
+        const [jobsData, resumesData] = await Promise.all([getJobs(), getResumes()]);
         setJobs(jobsData);
-        
-        // Fetch resumes
-        const resumesData = await getResumes();
         setResumes(resumesData);
-        
-        // Set default selected job if any jobs exist
         if (jobsData.length > 0) {
           setSelectedJobId(jobsData[0].id);
         }
@@ -208,13 +133,11 @@ const MatchesPage = () => {
         console.error('Error fetching data:', error);
       }
     };
-    
     fetchData();
   }, []);
-  
+
   const handleCalculateMatches = async () => {
     if (!selectedJobId) return;
-    
     setLoading(true);
     try {
       const matchResults = await calculateMatches(selectedJobId);
@@ -225,126 +148,87 @@ const MatchesPage = () => {
       setLoading(false);
     }
   };
-  
-  const getResumeById = (resumeId) => {
-    return resumes.find(resume => resume.id === resumeId) || {};
-  };
 
-  // Filter and sort matches
   const filteredMatches = matches
     .filter(m => m.score * 100 >= minScore)
-    .filter(m => !requiredSkill || m.details.matching_skills.includes(requiredSkill))
     .sort((a, b) => sortBy === 'score' ? b.score - a.score : 0);
-  
+
+  const avgScore = matches.length > 0
+    ? Math.round(matches.reduce((sum, m) => sum + m.score, 0) / matches.length * 100)
+    : 0;
+
+  const highCount = matches.filter(m => m.score >= 0.7).length;
+
   return (
     <>
       <Header />
       <PageContainer>
         <ContentContainer>
           <PageTitle>Match Results</PageTitle>
-          
-          <Card
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <SectionTitle>Calculate Matches</SectionTitle>
-            
-            <FormGroup>
-              <Label htmlFor="job-select">Select Job Posting</Label>
-              <Select
-                id="job-select"
-                value={selectedJobId}
-                onChange={(e) => setSelectedJobId(e.target.value)}
-              >
-                <option value="">-- Select a job posting --</option>
-                {jobs.map((job) => (
-                  <option key={job.id} value={job.id}>
-                    {job.title} at {job.company}
-                  </option>
-                ))}
-              </Select>
-            </FormGroup>
-            
-            <ButtonContainer>
-              <Button 
-                onClick={handleCalculateMatches} 
-                disabled={!selectedJobId || loading}
-              >
-                {loading ? 'Calculating...' : 'Calculate Matches'}
-              </Button>
-            </ButtonContainer>
-          </Card>
-          
-          {loading ? (
-            <Loader>
-              <i className="fas fa-spinner"></i>
-              <p>Calculating matches...</p>
-            </Loader>
-          ) : matches.length > 0 ? (
-            <MatchList>
-              <SectionTitle>Match Results</SectionTitle>
-              
-              <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
-                <label>Min Score: <input type="number" value={minScore} onChange={e => setMinScore(Number(e.target.value))} min={0} max={100} /></label>
-                <label>Required Skill: <input type="text" value={requiredSkill} onChange={e => setRequiredSkill(e.target.value)} /></label>
-                <label>Sort By: <select value={sortBy} onChange={e => setSortBy(e.target.value)}><option value="score">Score</option></select></label>
-              </div>
 
-              {filteredMatches.map((match, index) => {
-                const resume = getResumeById(match.resume_id);
-                const scorePercentage = Math.round(match.score * 100);
-                
-                return (
-                  <MatchItem
-                    key={match.id || index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                  >
-                    <MatchScore>{scorePercentage}%</MatchScore>
-                    <MatchInfo>
-                      <MatchName>{resume.name || 'Unknown Candidate'}</MatchName>
-                      <MatchDetail>
-                        <i className="fas fa-envelope"></i> {resume.email || 'No email'}
-                      </MatchDetail>
-                      <MatchDetail>
-                        <i className="fas fa-briefcase"></i> {resume.experience?.length || 0} experience entries
-                      </MatchDetail>
-                      
-                      <SkillsMatch>
-                        <SkillsTitle>Skills Match:</SkillsTitle>
-                        <SkillTags>
-                          {match.details?.matching_skills?.map((skill, i) => (
-                            <SkillTag key={i} matched={true}>
-                              <i className="fas fa-check"></i> {skill}
-                            </SkillTag>
-                          ))}
-                          
-                          {match.details?.missing_skills?.slice(0, 3).map((skill, i) => (
-                            <SkillTag key={i} matched={false}>
-                              <i className="fas fa-times"></i> {skill}
-                            </SkillTag>
-                          ))}
-                          
-                          {match.details?.missing_skills?.length > 3 && (
-                            <SkillTag matched={false}>
-                              +{match.details.missing_skills.length - 3} more missing
-                            </SkillTag>
-                          )}
-                        </SkillTags>
-                      </SkillsMatch>
-                    </MatchInfo>
-                  </MatchItem>
-                );
-              })}
-            </MatchList>
-          ) : selectedJobId && !loading && (
+          <MatchCalculation
+            jobs={jobs}
+            selectedJobId={selectedJobId}
+            onJobChange={setSelectedJobId}
+            onCalculate={handleCalculateMatches}
+            loading={loading}
+          />
+
+          {loading ? (
+            <Loader>Calculating matches...</Loader>
+          ) : matches.length > 0 ? (
+            <>
+              <SummaryBar>
+                <SummaryItem>
+                  <SummaryValue>{matches.length}</SummaryValue>
+                  <SummaryLabel>Total Matches</SummaryLabel>
+                </SummaryItem>
+                <SummaryItem>
+                  <SummaryValue color="#4bb543">{avgScore}%</SummaryValue>
+                  <SummaryLabel>Average Score</SummaryLabel>
+                </SummaryItem>
+                <SummaryItem>
+                  <SummaryValue color="#4361ee">{highCount}</SummaryValue>
+                  <SummaryLabel>High Matches (70%+)</SummaryLabel>
+                </SummaryItem>
+                <SummaryItem>
+                  <SummaryValue color="#ffc107">
+                    {Math.round(Math.max(...matches.map(m => m.score)) * 100)}%
+                  </SummaryValue>
+                  <SummaryLabel>Best Score</SummaryLabel>
+                </SummaryItem>
+              </SummaryBar>
+
+              <SectionTitle>Visualizations</SectionTitle>
+              <MatchVisualization matches={matches} resumes={resumes} />
+
+              <SectionTitle>Candidate Results</SectionTitle>
+              <FilterBar>
+                <FilterLabel>
+                  Min Score:
+                  <FilterInput
+                    type="number"
+                    value={minScore}
+                    onChange={e => setMinScore(Number(e.target.value))}
+                    min={0}
+                    max={100}
+                  />
+                </FilterLabel>
+                <FilterLabel>
+                  Sort By:
+                  <FilterSelect value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                    <option value="score">Score (High to Low)</option>
+                  </FilterSelect>
+                </FilterLabel>
+              </FilterBar>
+
+              <MatchResults matches={filteredMatches} resumes={resumes} />
+            </>
+          ) : selectedJobId && !loading ? (
             <EmptyState>
-              <i className="fas fa-search" style={{ fontSize: '3rem', marginBottom: '1rem' }}></i>
               <p>No matches found. Try selecting a different job or upload more resumes.</p>
             </EmptyState>
-          )}
+          ) : null}
         </ContentContainer>
       </PageContainer>
       <Footer />

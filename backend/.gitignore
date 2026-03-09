@@ -1,8 +1,10 @@
 # Generated data files
 data/processed_jobs.json
 data/processed_resumes.json
+data/training_corpus.json
 data/resume_dataset.zip
 data/skills_database.json
+data/labeled_pairs.csv
 
 # Model files
 models/tfidf_vectorizer.pkl
